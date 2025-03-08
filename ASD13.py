@@ -29,16 +29,16 @@ def add_loss_reason(row):
     else:
         return '✅ لا توجد حالة فقد مؤكدة'
 
-# 🔹 **تحديث دالة تحديد الأولوية حسب الطلب**
+# 🔹 **تحديث شروط الأولوية حسب الطلب الجديد**
 def set_priority(row):
-    if ((row['V1'] == 0 or row['V2'] == 0 or row['V3'] == 0) and (row['A1'] > 0 or row['A2'] > 0 or row['A3'] > 0)):
+    if row['V1'] == 0 and row['A1'] > 0 or row['V2'] == 0 and row['A2'] > 0 or row['V3'] == 0 and row['A3'] > 0:
         return 'High'
-    elif ((row['V1'] < 50 or row['V2'] < 50 or row['V3'] < 50) and (row['A1'] > 0 or row['A2'] > 0 or row['A3'] > 0)):
+    elif (row['V1'] < 50 or row['V2'] < 50 or row['V3'] < 50) and (row['A1'] > 0 or row['A2'] > 0 or row['A3'] > 0):
         return 'High'
     elif (
-        ((row['V1'] == 0 and abs(row['A2'] - row['A3']) / max(row['A2'], row['A3']) > 0.6) or
-         (row['V2'] == 0 and abs(row['A1'] - row['A3']) / max(row['A1'], row['A3']) > 0.6) or
-         (row['V3'] == 0 and abs(row['A1'] - row['A2']) / max(row['A1'], row['A2']) > 0.6))
+        (row['V1'] == 0 and abs(row['A2'] - row['A3']) / max(row['A2'], row['A3']) > 0.6) or
+        (row['V2'] == 0 and abs(row['A1'] - row['A3']) / max(row['A1'], row['A3']) > 0.6) or
+        (row['V3'] == 0 and abs(row['A1'] - row['A2']) / max(row['A1'], row['A2']) > 0.6)
     ):
         return 'High'
     else:
@@ -106,16 +106,19 @@ def analyze_data(data):
         st.error(f"❌ حدث خطأ أثناء تحليل البيانات: {str(e)}")
         return None
 
-# 🔹 **واجهة المستخدم**
-st.title("📊 نظام اكتشاف حالات الفاقد المحتملة")
-uploaded_file = st.file_uploader("📤 قم برفع ملف البيانات للتحليل (Excel)", type=["xlsx"])
-if uploaded_file:
-    df = pd.read_excel(uploaded_file)
-    high_priority_loss = analyze_data(df)
+# 🌍 **عرض حالات الفاقد الأولية على الخريطة بعد التحليل**
+high_priority_loss = analyze_data(pd.read_excel(data_frame_template_path))
+if high_priority_loss is not None and not high_priority_loss.empty:
+    st.subheader("🗺️ خريطة حالات الفاقد ذات الأولوية العالية")
+    m = folium.Map(location=[high_priority_loss["Latitude"].mean(), high_priority_loss["Longitude"].mean()], zoom_start=10, tiles="OpenStreetMap")
+    for _, row in high_priority_loss.iterrows():
+        folium.Marker(
+            [row["Latitude"], row["Longitude"]],
+            popup=row["Loss_Reason"],
+            icon=folium.Icon(color="red")
+        ).add_to(m)
+    folium_static(m)
 
-    if high_priority_loss is not None and not high_priority_loss.empty:
-        st.subheader("🗺️ خريطة حالات الفاقد ذات الأولوية العالية")
-        m = folium.Map(location=[high_priority_loss["Latitude"].mean(), high_priority_loss["Longitude"].mean()], zoom_start=10)
-        for _, row in high_priority_loss.iterrows():
-            folium.Marker([row["Latitude"], row["Longitude"]], popup=row["Loss_Reason"], icon=folium.Icon(color='red')).add_to(m)
-        folium_static(m)
+# 🏷️ **إضافة معلومات المطور**
+st.markdown("---")
+st.markdown("👨‍💻 **المطور: مشهور العباس-78598-00966553339838** | 📅 **تاريخ التحديث:** 08-03-2025")
