@@ -26,6 +26,12 @@ def add_loss_reason(row):
         return '⚠️ فقد بسبب جهد صفر وتيار على V2'
     elif row['V3'] == 0 and row['A3'] > 0:
         return '⚠️ فقد بسبب جهد صفر وتيار على V3'
+    elif row['V1'] < 50 and row['A1'] > 0:
+        return '⚠️ فقد بسبب جهد منخفض جدًا وتيار على V1'
+    elif row['V2'] < 50 and row['A2'] > 0:
+        return '⚠️ فقد بسبب جهد منخفض جدًا وتيار على V2'
+    elif row['V3'] < 50 and row['A3'] > 0:
+        return '⚠️ فقد بسبب جهد منخفض جدًا وتيار على V3'
     else:
         return '✅ لا توجد حالة فقد مؤكدة'
 
@@ -42,7 +48,21 @@ def analyze_data(data):
         X = data[["V1", "V2", "V3", "A1", "A2", "A3"]]
         predictions = model.predict(X)
         data["Predicted_Loss"] = predictions
-        data["Priority"] = data.apply(lambda row: "High" if row["Predicted_Loss"] == 1 and (row["V1"] == 0 or row["V2"] == 0 or row["V3"] == 0) else "Normal", axis=1)
+
+        # 🔹 **تحديث شرط الأولوية بناءً على الشروط الجديدة**
+        def classify_priority(row):
+            if row["Predicted_Loss"] == 1:
+                if row["V1"] == 0 or row["V2"] == 0 or row["V3"] == 0:
+                    return "High"
+                if row["V1"] < 50 and row["A1"] > 0:
+                    return "High"
+                if row["V2"] < 50 and row["A2"] > 0:
+                    return "High"
+                if row["V3"] < 50 and row["A3"] > 0:
+                    return "High"
+            return "Normal"
+
+        data["Priority"] = data.apply(classify_priority, axis=1)
         data["Loss_Reason"] = data.apply(add_loss_reason, axis=1)
 
         # 🔹 **إضافة الإحداثيات للعدادات ذات الفاقد**
@@ -134,9 +154,6 @@ if high_priority_loss is not None and not high_priority_loss.empty:
             ).add_to(m)
 
         folium_static(m)
-    else:
-        st.warning("⚠️ لا توجد إحداثيات لحالات الفاقد الأولية في ملف الإحداثيات العام!")
 
-# 🏷️ **إضافة معلومات المطور**
 st.markdown("---")
 st.markdown("👨‍💻 **المطور: مشهور العباس-78598-00966553339838** | 📅 **تاريخ التحديث:** 08-03-2025")
