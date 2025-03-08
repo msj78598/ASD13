@@ -39,7 +39,7 @@ def add_loss_reason(row):
     elif row['V3'] == 0 and abs(row['A1'] - row['A2']) > 0.6 * max(row['A1'], row['A2']):
         return '⚠️ فقد محتمل بسبب فرق تيار بين الفازات'
     else:
-        return None  # لا يتم تضمينها في قائمة الأولوية إذا لم تكن حالة فقد مؤكدة أو محتملة
+        return '✅ لا توجد حالة فقد مؤكدة'
 
 # 🔹 **تحليل البيانات**
 def analyze_data(data):
@@ -49,14 +49,13 @@ def analyze_data(data):
         
         if not set(required_columns).issubset(data.columns):
             st.error("⚠️ الملف لا يحتوي على الأعمدة المطلوبة للتحليل!")
-            return
+            return None
 
         X = data[["V1", "V2", "V3", "A1", "A2", "A3"]]
         predictions = model.predict(X)
         data["Predicted_Loss"] = predictions
         data["Loss_Reason"] = data.apply(add_loss_reason, axis=1)
-        data = data.dropna(subset=["Loss_Reason"])  # الاحتفاظ فقط بحالات الفاقد المؤكدة والمحتملة
-        data["Priority"] = "High"  # جميع الحالات هنا ذات أولوية عالية
+        data["Priority"] = data["Loss_Reason"].apply(lambda x: "High" if "⚠️" in str(x) else "Normal")
 
         # 🔹 **إضافة الإحداثيات للعدادات ذات الفاقد**
         coords_df = load_coordinates()
@@ -95,3 +94,7 @@ if uploaded_file is not None:
             high_priority_loss.to_excel(writer, index=False)
         output.seek(0)
         st.download_button("📥 تحميل نتائج الفاقد ذات الأولوية العالية", data=output, file_name="high_priority_loss_cases.xlsx")
+
+# 🏷️ **إضافة معلومات المطور**
+st.markdown("---")
+st.markdown("👨‍💻 **المطور: مشهور العباس-78598-00966553339838** | 📅 **تاريخ التحديث:** 08-03-2025")
