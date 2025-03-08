@@ -47,7 +47,7 @@ def analyze_data(data):
         X = data[["V1", "V2", "V3", "A1", "A2", "A3"]]
         predictions = model.predict(X)
         data["Predicted_Loss"] = predictions
-        data["Priority"] = data.apply(lambda row: "High" if row["Predicted_Loss"] == 1 and (row["V1"] == 0 or row["V2"] == 0 or row["V3"] == 0) else "Normal", axis=1)
+        data["Priority"] = data.apply(set_priority, axis=1)
         data["Loss_Reason"] = data.apply(add_loss_reason, axis=1)
 
         # 🔹 **إضافة الإحداثيات للعدادات ذات الفاقد**
