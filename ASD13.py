@@ -21,23 +21,23 @@ def load_coordinates():
 # 🔹 **إضافة تفسير واضح لحالات الفاقد**
 def add_loss_reason(row):
     if row['V1'] == 0 and row['A1'] > 0:
-        return '⚠️ فقد بسبب جهد صفر وتيار على V1'
-    elif row['V2'] == 0 and row['A2'] > 0:
-        return '⚠️ فقد بسبب جهد صفر وتيار على V2'
-    elif row['V3'] == 0 and row['A3'] > 0:
-        return '⚠️ فقد بسبب جهد صفر وتيار على V3'
+        return '⚠️ فقد مؤكد بسبب جهد صفر وتيار على V1'
     elif row['V1'] < 50 and row['A1'] > 0:
-        return '⚠️ فقد محتمل بسبب جهد منخفض جدًا على V1'
+        return '⚠️ فقد محتمل بسبب جهد منخفض وتيار على V1'
+    elif row['V2'] == 0 and row['A2'] > 0:
+        return '⚠️ فقد مؤكد بسبب جهد صفر وتيار على V2'
     elif row['V2'] < 50 and row['A2'] > 0:
-        return '⚠️ فقد محتمل بسبب جهد منخفض جدًا على V2'
+        return '⚠️ فقد محتمل بسبب جهد منخفض وتيار على V2'
+    elif row['V3'] == 0 and row['A3'] > 0:
+        return '⚠️ فقد مؤكد بسبب جهد صفر وتيار على V3'
     elif row['V3'] < 50 and row['A3'] > 0:
-        return '⚠️ فقد محتمل بسبب جهد منخفض جدًا على V3'
+        return '⚠️ فقد محتمل بسبب جهد منخفض وتيار على V3'
     elif row['V1'] == 0 and abs(row['A2'] - row['A3']) > 0.6 * max(row['A2'], row['A3']):
-        return '⚠️ فقد محتمل بسبب عدم توازن التيار بين A2 و A3 مع جهد صفر على V1'
+        return '⚠️ فقد محتمل بسبب فرق تيار بين الفازات'
     elif row['V2'] == 0 and abs(row['A1'] - row['A3']) > 0.6 * max(row['A1'], row['A3']):
-        return '⚠️ فقد محتمل بسبب عدم توازن التيار بين A1 و A3 مع جهد صفر على V2'
+        return '⚠️ فقد محتمل بسبب فرق تيار بين الفازات'
     elif row['V3'] == 0 and abs(row['A1'] - row['A2']) > 0.6 * max(row['A1'], row['A2']):
-        return '⚠️ فقد محتمل بسبب عدم توازن التيار بين A1 و A2 مع جهد صفر على V3'
+        return '⚠️ فقد محتمل بسبب فرق تيار بين الفازات'
     else:
         return '✅ لا توجد حالة فقد مؤكدة'
 
@@ -54,33 +54,38 @@ def analyze_data(data):
         X = data[["V1", "V2", "V3", "A1", "A2", "A3"]]
         predictions = model.predict(X)
         data["Predicted_Loss"] = predictions
-
-        # 🔹 **تصنيف الأولوية بناءً على الشروط المحددة**
-        def classify_priority(row):
-            if row["Predicted_Loss"] == 1 and (
-                row["V1"] == 0 and row["A1"] > 0 or 
-                row["V2"] == 0 and row["A2"] > 0 or 
-                row["V3"] == 0 and row["A3"] > 0 or
-                row["V1"] < 50 and row["A1"] > 0 or
-                row["V2"] < 50 and row["A2"] > 0 or
-                row["V3"] < 50 and row["A3"] > 0 or
-                row["V1"] == 0 and abs(row["A2"] - row["A3"]) > 0.6 * max(row["A2"], row["A3"]) or
-                row["V2"] == 0 and abs(row["A1"] - row["A3"]) > 0.6 * max(row["A1"], row["A3"]) or
-                row["V3"] == 0 and abs(row["A1"] - row["A2"]) > 0.6 * max(row["A1"], row["A2"])
-            ):
-                return "High"
-            else:
-                return "Normal"
-
-        data["Priority"] = data.apply(classify_priority, axis=1)
+        data["Priority"] = data.apply(lambda row: "High" if row["Predicted_Loss"] == 1 and (row["V1"] == 0 or row["V2"] == 0 or row["V3"] == 0) else "Normal", axis=1)
         data["Loss_Reason"] = data.apply(add_loss_reason, axis=1)
 
-        # 🔹 **إضافة الإحداثيات للعدادات ذات الفاقد**
         coords_df = load_coordinates()
         data = data.merge(coords_df, on="Meter Number", how="left")
 
+        st.subheader("📋 جميع حالات الفاقد المكتشفة")
+        st.dataframe(data)
+        
+        high_priority_loss = data[data["Priority"] == "High"]
+        st.subheader("🚨 حالات الفاقد ذات الأولوية العالية")
+        st.dataframe(high_priority_loss)
+        
+        # 🌍 **عرض خريطة الفاقد**
+        if "Latitude" in high_priority_loss.columns and "Longitude" in high_priority_loss.columns:
+            st.subheader("🗺️ خريطة حالات الفاقد ذات الأولوية العالية")
+            m = folium.Map(location=[high_priority_loss["Latitude"].mean(), high_priority_loss["Longitude"].mean()], zoom_start=10)
+            for _, row in high_priority_loss.iterrows():
+                popup_text = f"""
+                <b>عداد:</b> {row["Meter Number"]}<br>
+                <b>الجهد (V):</b> {row["V1"]}, {row["V2"]}, {row["V3"]}<br>
+                <b>التيار (A):</b> {row["A1"]}, {row["A2"]}, {row["A3"]}<br>
+                <b>السبب:</b> {row["Loss_Reason"]}
+                """
+                folium.Marker(
+                    location=[row["Latitude"], row["Longitude"]],
+                    popup=folium.Popup(popup_text, max_width=300),
+                    icon=folium.Icon(color="red")
+                ).add_to(m)
+            folium_static(m)
+        
         return data
-
     except Exception as e:
         st.error(f"❌ حدث خطأ أثناء تحليل البيانات: {str(e)}")
         return None
