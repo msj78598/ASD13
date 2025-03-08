@@ -32,11 +32,11 @@ def add_loss_reason(row):
         return '⚠️ فقد بسبب جهد منخفض جدًا وتيار على V2'
     elif row['V3'] < 50 and row['A3'] > 0:
         return '⚠️ فقد بسبب جهد منخفض جدًا وتيار على V3'
-    elif row['V1'] == 0 and row['A1'] == 0 and abs(row['A2'] - row['A3']) > 0.6 * max(row['A2'], row['A3']):
+    elif row['V1'] == 0 and abs(row['A2'] - row['A3']) > 0.6 * max(row['A2'], row['A3']):
         return '⚠️ فقد بسبب عدم توازن التيار بين A2 و A3 مع جهد صفر على V1'
-    elif row['V2'] == 0 and row['A2'] == 0 and abs(row['A1'] - row['A3']) > 0.6 * max(row['A1'], row['A3']):
+    elif row['V2'] == 0 and abs(row['A1'] - row['A3']) > 0.6 * max(row['A1'], row['A3']):
         return '⚠️ فقد بسبب عدم توازن التيار بين A1 و A3 مع جهد صفر على V2'
-    elif row['V3'] == 0 and row['A3'] == 0 and abs(row['A1'] - row['A2']) > 0.6 * max(row['A1'], row['A2']):
+    elif row['V3'] == 0 and abs(row['A1'] - row['A2']) > 0.6 * max(row['A1'], row['A2']):
         return '⚠️ فقد بسبب عدم توازن التيار بين A1 و A2 مع جهد صفر على V3'
     else:
         return '✅ لا توجد حالة فقد مؤكدة'
@@ -70,11 +70,11 @@ def analyze_data(data):
                     return "High"
                 if row["V3"] < 50 and row["A3"] > 0:
                     return "High"
-                if row["V1"] == 0 and row["A1"] == 0 and abs(row["A2"] - row["A3"]) > 0.6 * max(row["A2"], row["A3"]):
+                if row["V1"] == 0 and abs(row["A2"] - row["A3"]) > 0.6 * max(row["A2"], row["A3"]):
                     return "High"
-                if row["V2"] == 0 and row["A2"] == 0 and abs(row["A1"] - row["A3"]) > 0.6 * max(row["A1"], row["A3"]):
+                if row["V2"] == 0 and abs(row["A1"] - row["A3"]) > 0.6 * max(row["A1"], row["A3"]):
                     return "High"
-                if row["V3"] == 0 and row["A3"] == 0 and abs(row["A1"] - row["A2"]) > 0.6 * max(row["A1"], row["A2"]):
+                if row["V3"] == 0 and abs(row["A1"] - row["A2"]) > 0.6 * max(row["A1"], row["A2"]):
                     return "High"
             return "Normal"
 
