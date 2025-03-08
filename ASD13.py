@@ -7,9 +7,9 @@ from streamlit_folium import folium_static
 from io import BytesIO
 
 # 🔹 **المسارات الأساسية**
-model_path = r"C:\Users\Sec\Documents\ASD13\ASD12_XGBoost.pkl"
-data_frame_template_path = r"C:\Users\Sec\Documents\ASD13\The data frame file to be analyzed.xlsx"
-coordinates_path = r"C:\Users\Sec\Documents\ASD13\Meter_Locations_Database.xlsx"
+data_frame_template_path = "The data frame file to be analyzed.xlsx"
+coordinates_path = "Meter_Locations_Database.xlsx"
+model_path = "ASD12_XGBoost.pkl"
 
 # 🔹 **تحميل ملف الإحداثيات العام**
 def load_coordinates():
