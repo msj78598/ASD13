@@ -95,7 +95,8 @@ def analyze_data(data):
 
         # 🔹 **عرض بيانات حالات الفاقد**
         loss_data = data[data["Predicted_Loss"] == 1]
-        high_priority_loss = loss_data[loss_data["Priority"] == "High"]
+        high_priority_loss = data[data["Priority"] == "High"]
+
 
         st.subheader("📋 جميع حالات الفاقد المكتشفة")
         st.dataframe(loss_data)
