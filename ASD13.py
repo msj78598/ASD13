@@ -103,23 +103,22 @@ def analyze_data(data):
         st.subheader("🚨 حالات الفاقد ذات الأولوية العالية")
         st.dataframe(high_priority_loss)
 
-        # 🔹 **إمكانية تحميل النتائج**
+         # تحميل النتائج
         output_loss = BytesIO()
-        with pd.ExcelWriter(output_loss, engine='xlsxwriter') as writer:
-            loss_data.to_excel(writer, index=False)
+        loss_data.to_excel(output_loss, index=False)
         output_loss.seek(0)
         st.download_button("📥 تحميل جميع حالات الفاقد", data=output_loss, file_name="all_loss_cases.xlsx")
 
         output_high_priority = BytesIO()
-        with pd.ExcelWriter(output_high_priority, engine='xlsxwriter') as writer:
-            high_priority_loss.to_excel(writer, index=False)
+        high_priority_loss.to_excel(output_high_priority, index=False)
         output_high_priority.seek(0)
         st.download_button("🚨 تحميل حالات الفاقد ذات الأولوية العالية", data=output_high_priority, file_name="high_priority_loss_cases.xlsx")
 
-        return high_priority_loss  # 🔹 **إرجاع حالات الفاقد ذات الأولوية العالية لاستخدامها في الخريطة**
+        return high_priority_loss
 
     except Exception as e:
         st.error(f"❌ حدث خطأ أثناء تحليل البيانات: {str(e)}")
+        return None
         return None
 
 # 📂 **إضافة خيار تحميل قالب البيانات (الفريم وورك)**
