@@ -109,15 +109,15 @@ def analyze_data(data):
         loss_data.to_excel(output_loss, index=False)
         output_loss.seek(0)
         st.download_button("📥 تحميل جميع حالات الفاقد", data=output_loss, file_name="all_loss_cases.xlsx")
+
         output_high_priority = BytesIO()
         with pd.ExcelWriter(output_high_priority, engine='xlsxwriter') as writer:
-        high_priority_loss.to_excel(writer, index=False)
-
+            high_priority_loss.to_excel(writer, index=False)
         output_high_priority.seek(0)
         st.download_button(
-        "🚨 تحميل حالات الفاقد ذات الأولوية العالية",
-        data=output_high_priority,
-        file_name="high_priority_loss_cases.xlsx"
+            "🚨 تحميل حالات الفاقد ذات الأولوية العالية", 
+            data=output_high_priority, 
+            file_name="high_priority_loss_cases.xlsx"
         )
 
        
