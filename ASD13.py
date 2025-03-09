@@ -143,7 +143,7 @@ if uploaded_file is not None:
 if high_priority_loss is not None and not high_priority_loss.empty:
     if "Latitude" in high_priority_loss.columns and "Longitude" in high_priority_loss.columns:
         st.subheader("🗺️ خريطة حالات الفاقد ذات الأولوية العالية")
-        
+
         map_data = high_priority_loss.dropna(subset=["Latitude", "Longitude"])
 
         if not map_data.empty:
@@ -156,13 +156,13 @@ if high_priority_loss is not None and not high_priority_loss.empty:
                 <b>الجهد (V):</b> {row["V1"]}, {row["V2"]}, {row["V3"]}<br>
                 <b>التيار (A):</b> {row["A1"]}, {row["A2"]}, {row["A3"]}<br>
                 <b>السبب:</b> {row["Loss_Reason"]}<br>
-                <a href="{popup_text}" target="_blank">📍 اضغط هنا للوصول للموقع</a>
+                <a href="{google_maps_url}" target="_blank">📍 اضغط هنا للوصول للموقع</a>
                 """
-                folium.Marker(
-                    location=[row["Latitude"], row["Longitude"]],
-                    popup=folium.Popup(popup_text, max_width=300),
-                    icon=folium.Icon(color="red")
-                ).add_to(m)
+            folium.Marker(
+                location=[row["Latitude"], row["Longitude"]],
+                popup=folium.Popup(popup_text, max_width=300),
+                icon=folium.Icon(color="red")
+            ).add_to(m)
 
             folium_static(m)
         else:
