@@ -143,25 +143,32 @@ if uploaded_file is not None:
 if high_priority_loss is not None and not high_priority_loss.empty:
     if "Latitude" in high_priority_loss.columns and "Longitude" in high_priority_loss.columns:
         st.subheader("🗺️ خريطة حالات الفاقد ذات الأولوية العالية")
-        
-        m = folium.Map(location=[high_priority_loss["Latitude"].mean(), high_priority_loss["Longitude"].mean()], zoom_start=10, tiles="OpenStreetMap")
 
-        for _, row in high_priority_loss.iterrows():
-            popup_text = f"""
-            <b>عداد:</b> {row["Meter Number"]}<br>
-            <b>الجهد (V):</b> {row["V1"]}, {row["V2"]}, {row["V3"]}<br>
-            <b>التيار (A):</b> {row["A1"]}, {row["A2"]}, {row["A3"]}<br>
-            <b>السبب:</b> {row["Loss_Reason"]}
-            """
-            folium.Marker(
-                location=[row["Latitude"], row["Longitude"]],
-                popup=folium.Popup(popup_text, max_width=300),
-                icon=folium.Icon(color="red")
-            ).add_to(m)
+        # حذف القيم الفارغة من الاحداثيات
+        map_data = high_priority_loss.dropna(subset=["Latitude", "Longitude"])
 
-        folium_static(m)
+        if not map_data.empty:
+            m = folium.Map(location=[map_data["Latitude"].mean(), map_data["Longitude"].mean()], zoom_start=10, tiles="OpenStreetMap")
+
+            for _, row in map_data.iterrows():
+                popup_text = f"""
+                <b>عداد:</b> {row["Meter Number"]}<br>
+                <b>الجهد (V):</b> {row["V1"]}, {row["V2"]}, {row["V3"]}<br>
+                <b>التيار (A):</b> {row["A1"]}, {row["A2"]}, {row["A3"]}<br>
+                <b>السبب:</b> {row["Loss_Reason"]}
+                """
+                folium.Marker(
+                    location=[row["Latitude"], row["Longitude"]],
+                    popup=folium.Popup(popup_text, max_width=300),
+                    icon=folium.Icon(color="red")
+                ).add_to(m)
+
+            folium_static(m)
+        else:
+            st.warning("⚠️ لا توجد إحداثيات كافية لعرض الخريطة.")
     else:
-        st.warning("⚠️ لا توجد إحداثيات لحالات الفاقد الأولية في ملف الإحداثيات العام!")
+        st.warning("⚠️ لا توجد إحداثيات لحالات الفاقد في ملف الإحداثيات العام!")
+
 
 # 🏷️ **إضافة معلومات المطور**
 st.markdown("---")
