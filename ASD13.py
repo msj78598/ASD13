@@ -26,13 +26,14 @@ def set_priority(row):
     elif (row['V1'] < 50 or row['V2'] < 50 or row['V3'] < 50) and (row['A1'] > 0 or row['A2'] > 0 or row['A3'] > 0):
         return 'High'  # فاقد محتمل
     elif (
-        (row['V1'] == 0 and abs(row['A2'] - row['A3']) / max(row['A2'], row['A3']) > 0.6) or
-        (row['V2'] == 0 and abs(row['A1'] - row['A3']) / max(row['A1'], row['A3']) > 0.6) or
-        (row['V3'] == 0 and abs(row['A1'] - row['A2']) / max(row['A1'], row['A2']) > 0.6)
+        (row['V1'] == 0 and max(row['A2'], row['A3']) > 0 and abs(row['A2'] - row['A3']) / max(row['A2'], row['A3']) > 0.6) or
+        (row['V2'] == 0 and max(row['A1'], row['A3']) > 0 and abs(row['A1'] - row['A3']) / max(row['A1'], row['A3']) > 0.6) or
+        (row['V3'] == 0 and max(row['A1'], row['A2']) > 0 and abs(row['A1'] - row['A2']) / max(row['A1'], row['A2']) > 0.6)
     ):
         return 'High'  # فاقد محتمل
     else:
         return 'Normal'
+
 
 # 🔹 **تحليل البيانات**
 def analyze_data(data):
