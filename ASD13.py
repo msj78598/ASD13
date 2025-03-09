@@ -158,17 +158,18 @@ if high_priority_loss is not None and not high_priority_loss.empty:
                 <b>السبب:</b> {row["Loss_Reason"]}<br>
                 <a href="{google_maps_url}" target="_blank">📍 اضغط هنا للوصول للموقع</a>
                 """
-            folium.Marker(
-                location=[row["Latitude"], row["Longitude"]],
-                popup=folium.Popup(popup_text, max_width=300),
-                icon=folium.Icon(color="red")
-            ).add_to(m)
+                folium.Marker(
+                    location=[row["Latitude"], row["Longitude"]],
+                    popup=folium.Popup(popup_text, max_width=300),
+                    icon=folium.Icon(color="red")
+                ).add_to(m)
 
             folium_static(m)
         else:
             st.warning("⚠️ لا توجد إحداثيات كافية لعرض الخريطة.")
     else:
         st.warning("⚠️ لا توجد إحداثيات لحالات الفاقد في ملف الإحداثيات العام!")
+
 
 
 
