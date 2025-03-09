@@ -139,23 +139,24 @@ if uploaded_file is not None:
     df = pd.read_excel(uploaded_file)
     high_priority_loss = analyze_data(df)
 
-# 🌍 **عرض حالات الفاقد الأولية على الخريطة بعد التحليل**
+# 🌍 **عرض حالات الفاقد ذات الأولوية على الخريطة مع رابط الوصول**
 if high_priority_loss is not None and not high_priority_loss.empty:
     if "Latitude" in high_priority_loss.columns and "Longitude" in high_priority_loss.columns:
         st.subheader("🗺️ خريطة حالات الفاقد ذات الأولوية العالية")
-
-        # حذف القيم الفارغة من الاحداثيات
+        
         map_data = high_priority_loss.dropna(subset=["Latitude", "Longitude"])
 
         if not map_data.empty:
             m = folium.Map(location=[map_data["Latitude"].mean(), map_data["Longitude"].mean()], zoom_start=10, tiles="OpenStreetMap")
 
             for _, row in map_data.iterrows():
+                google_maps_url = f"https://www.google.com/maps/dir/?api=1&destination={row['Latitude']},{row['Longitude']}"
                 popup_text = f"""
                 <b>عداد:</b> {row["Meter Number"]}<br>
                 <b>الجهد (V):</b> {row["V1"]}, {row["V2"]}, {row["V3"]}<br>
                 <b>التيار (A):</b> {row["A1"]}, {row["A2"]}, {row["A3"]}<br>
-                <b>السبب:</b> {row["Loss_Reason"]}
+                <b>السبب:</b> {row["Loss_Reason"]}<br>
+                <a href="{popup_text}" target="_blank">📍 اضغط هنا للوصول للموقع</a>
                 """
                 folium.Marker(
                     location=[row["Latitude"], row["Longitude"]],
@@ -168,6 +169,7 @@ if high_priority_loss is not None and not high_priority_loss.empty:
             st.warning("⚠️ لا توجد إحداثيات كافية لعرض الخريطة.")
     else:
         st.warning("⚠️ لا توجد إحداثيات لحالات الفاقد في ملف الإحداثيات العام!")
+
 
 
 # 🏷️ **إضافة معلومات المطور**
